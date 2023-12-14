@@ -1,4 +1,6 @@
 import os
+
+import redis
 from flask import Flask, jsonify
 from dotenv import load_dotenv
 from flask_smorest import Api
@@ -11,12 +13,17 @@ from db import db
 from flask_jwt_extended import JWTManager
 from blocklist import BLOCKLIST
 import models
+from redis import Redis
+from rq import Queue
 
+load_dotenv()
 
-
-def create_app(db_url=None):
+def create_app():
     app = Flask(__name__)
-    load_dotenv()
+
+
+    connection = redis.from_url('rediss://red-clo77asjtl8s73al1o1g:C1zpCa385aDjkCdkJl4qbNVmR7GeYbjU@frankfurt-redis.render.com:6379')
+    app.queue = Queue("emails" ,connection=connection)
     app.config["PROPAGATE_EXCEPTIONS"] = True
     app.config["API_TITLE"] = "STORES REST API"
     app.config["API_VERSION"] = "v1"
@@ -24,14 +31,16 @@ def create_app(db_url=None):
     app.config["OPENAPI_URL_PREFIX"] = "/"
     app.config["OPENAPI_SWAGGER_UI_PATH"] = "/swagger-ui"
     app.config["OPENAPI_SWAGGER_UI_URL"] = "https://cdn.jsdelivr.net/npm/swagger-ui-dist/"
-    app.config["SQLALCHEMY_DATABASE_URI"] = db_url or os.getenv("DATABASE_URL", "sqlite:///data.db")
+    app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql://postgres:123456@db:5432/flask_db"
+    app.config["REDIS_URL"] = 'rediss://red-clo77asjtl8s73al1o1g:C1zpCa385aDjkCdkJl4qbNVmR7GeYbjU@frankfurt-redis.render.com:6379'
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     db.init_app(app)
     api = Api(app)
-    migrate = Migrate(app, db)
+    migrate = Migrate(app, db, render_as_batch=True)
 
     app.config["JWT_SECRET_KEY"] = "146854600272412091438459700504408159533"
     jwt = JWTManager(app)
+    redis_db = Redis(app, "REDIS")
 
     @jwt.needs_fresh_token_loader
     def token_not_fresh_callback(jwt_header, jwt_payload):
@@ -83,7 +92,7 @@ def create_app(db_url=None):
     api.register_blueprint(UserBlueprint)
     return app
 
-
+myapp = create_app()
 
 if __name__ == '__main__':
-    create_app().run()
+    myapp.run()

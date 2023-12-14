@@ -1,0 +1,21 @@
+version: '3'
+services:
+  db:
+    image: postgres
+    ports:
+      - "5432:5432"
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: flask_db
+  app:
+    image: vmakksimov/flask1-app
+    build: .
+    ports:
+      - "8000:80"
+#    volumes:
+#      - .:/app
+#      - ./db/:/my/sqlite/path/
+    command: gunicorn -w 4 -b 0.0.0.0:80 app:myapp
+    depends_on:
+      - db
