@@ -1,5 +1,5 @@
 FROM python:3.12
-EXPOSE 5000
+EXPOSE 80
 WORKDIR /app
 COPY requirements.txt .
 COPY . .
