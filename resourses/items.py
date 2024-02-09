@@ -6,8 +6,8 @@ from sqlalchemy.exc import SQLAlchemyError
 from schemas import ItemSchema, ItemUpdateSchema
 from models import ItemModel
 from db import db
-blp = Blueprint("Items", __name__, description="Operations for items")
 
+blp = Blueprint("Items", __name__, description="Operations for items")
 
 
 @blp.route("/items")
@@ -48,8 +48,8 @@ class Items(MethodView):
     def put(self, request_data, item_id):
         item = ItemModel.query.get_or_404(item_id)
         if item:
-            item.type = request_data['type']
-            item.price = request_data['price']
+            item.type = request_data["type"]
+            item.price = request_data["price"]
         else:
             item = ItemModel(id=item_id, **request_data)
         db.session.add(item)

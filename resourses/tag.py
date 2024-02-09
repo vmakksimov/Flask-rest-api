@@ -8,6 +8,7 @@ from schemas import TagSchema, ItemSchema, TagAndItemSchema
 
 blp = Blueprint("Tags", "tags", description="Operations for stores")
 
+
 @blp.route("/store/<int:store_id>/tag")
 class TagStore(MethodView):
 
@@ -56,7 +57,7 @@ class LinkTagsToItem(MethodView):
         except Exception as e:
             abort(500, message={e})
 
-        return {"message": "Item removed from tag", "item" :item, "tag" : tag}
+        return {"message": "Item removed from tag", "item": item, "tag": tag}
 
 
 @blp.route("/tag/<string:tag_id>")
@@ -75,6 +76,9 @@ class Tag(MethodView):
         if not tag.items:
             db.session.delete(tag)
             db.session.commit()
-            return {"message" : "Tag deleted!"}
+            return {"message": "Tag deleted!"}
 
-        abort(400, message="Could not delete the tag. Make sure tag is not associated with any items and then try again")
+        abort(
+            400,
+            message="Could not delete the tag. Make sure tag is not associated with any items and then try again",
+        )

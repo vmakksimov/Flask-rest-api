@@ -1,6 +1,7 @@
 from db import db
 from sqlalchemy import UniqueConstraint
 
+
 class UserModel(db.Model):
     __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
@@ -8,5 +9,3 @@ class UserModel(db.Model):
     email = db.Column(db.String(80), unique=True)
     password = db.Column(db.String, nullable=False)
     # UniqueConstraint(email)
-
-    

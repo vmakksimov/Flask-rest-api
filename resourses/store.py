@@ -13,7 +13,6 @@ blp = Blueprint("stores", __name__, description="Operations for stores")
 @blp.route("/store/<int:store_id>")
 class Store(MethodView):
 
-
     @blp.response(200, StoreSchema)
     def get(self, store_id):
         store = StoreModel.query.get_or_404(store_id)
@@ -24,7 +23,7 @@ class Store(MethodView):
         store = StoreModel.query.get_or_404(store_id)
         db.session.delete(store)
         db.session.commit()
-        return {"message" : "Store deleted!"}
+        return {"message": "Store deleted!"}
 
 
 @blp.route("/store")
@@ -46,5 +45,3 @@ class StoreList(MethodView):
             abort(500, message="Something went wrong!")
 
         return store
-
-

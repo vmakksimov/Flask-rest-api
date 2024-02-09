@@ -2,7 +2,13 @@ from flask.views import MethodView
 from flask_smorest import Blueprint, abort
 from sqlalchemy.exc import IntegrityError
 from passlib.hash import sha256_crypt
-from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity, jwt_required, get_jwt
+from flask_jwt_extended import (
+    create_access_token,
+    create_refresh_token,
+    get_jwt_identity,
+    jwt_required,
+    get_jwt,
+)
 from blocklist import BLOCKLIST
 from db import db
 from models import UserModel
@@ -13,24 +19,34 @@ from flask import current_app
 
 blp = Blueprint("Users", "users", description="Operations on users")
 
+
 @blp.route("/register")
 class UserRegister(MethodView):
     @blp.arguments(UserRegisterSchema)
     def post(self, user_data):
         user = UserModel(
-            username=user_data['username'],
-            email=user_data['email'],
-            password=sha256_crypt.encrypt(user_data["password"])
+            username=user_data["username"],
+            email=user_data["email"],
+            password=sha256_crypt.encrypt(user_data["password"]),
         )
         try:
             db.session.add(user)
             db.session.commit()
         except IntegrityError:
-            abort(500, message="The username may exists or the password is not sufficient.")
+            abort(
+                500,
+                message="The username may exists or the password is not sufficient.",
+            )
 
-        current_app.queue.enqueue(send_user_registration_email, user.email, user.username)
+        current_app.queue.enqueue(
+            send_user_registration_email, user.email, user.username
+        )
         # send_user_registration_email()
-        send_simple_message(to=user.email, subject='Successfully Signed up!', body=f"Hello, {user.username} has succesfully signed up!")
+        send_simple_message(
+            to=user.email,
+            subject="Successfully Signed up!",
+            body=f"Hello, {user.username} has succesfully signed up!",
+        )
 
         return {"message": "User created successfully!"}, 201
 
@@ -39,8 +55,10 @@ class UserRegister(MethodView):
 class UserLogin(MethodView):
     @blp.arguments(UserSchema)
     def post(self, user_data):
-        user = UserModel.query.filter(UserModel.username == user_data['username']).first()
-        if user and sha256_crypt.verify(user_data['password'], user.password):
+        user = UserModel.query.filter(
+            UserModel.username == user_data["username"]
+        ).first()
+        if user and sha256_crypt.verify(user_data["password"], user.password):
             access_token = create_access_token(identity=user.id, fresh=True)
             refresh_token = create_refresh_token(identity=user.id)
             return {"access_token": access_token, "refresh_token": refresh_token}
