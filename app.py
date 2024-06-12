@@ -1,5 +1,4 @@
 import os
-
 import redis
 from flask import Flask, jsonify
 from dotenv import load_dotenv
@@ -12,7 +11,6 @@ from resourses.user import blp as UserBlueprint
 from db import db
 from flask_jwt_extended import JWTManager
 from blocklist import BLOCKLIST
-import models
 from redis import Redis
 from rq import Queue
 
@@ -23,7 +21,7 @@ def create_app():
     app = Flask(__name__)
 
     connection = redis.from_url(
-        "rediss://red-clo77asjtl8s73al1o1g:C1zpCa385aDjkCdkJl4qbNVmR7GeYbjU@frankfurt-redis.render.com:6379"
+        os.getenv('REDIS_URI')
     )
     app.queue = Queue("emails", connection=connection)
     app.config["PROPAGATE_EXCEPTIONS"] = True
@@ -36,17 +34,18 @@ def create_app():
         "https://cdn.jsdelivr.net/npm/swagger-ui-dist/"
     )
     app.config["SQLALCHEMY_DATABASE_URI"] = (
-        "postgresql://postgres:123456@db:5432/flask_db"
+        os.getenv('POSTGRES_URI')
     )
     app.config["REDIS_URL"] = (
-        "rediss://red-clo77asjtl8s73al1o1g:C1zpCa385aDjkCdkJl4qbNVmR7GeYbjU@frankfurt-redis.render.com:6379"
+        os.getenv('REDIS_URL')
     )
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    # initialize the SQLAlchemy and connects it to the app
     db.init_app(app)
     api = Api(app)
     migrate = Migrate(app, db, render_as_batch=True)
 
-    app.config["JWT_SECRET_KEY"] = "146854600272412091438459700504408159533"
+    app.config["JWT_SECRET_KEY"] = os.getenv('JWT_SECRET_KEY')
     jwt = JWTManager(app)
     redis_db = Redis(app, "REDIS")
 

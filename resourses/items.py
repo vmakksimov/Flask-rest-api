@@ -43,9 +43,12 @@ class Items(MethodView):
         return item
 
     @jwt_required()
+    #Input
     @blp.arguments(ItemUpdateSchema)
+    #Output
     @blp.response(200, ItemSchema)
     def put(self, request_data, item_id):
+        #TODO ItemModel.query.get(item_id) because if it's not found will not go to if statement
         item = ItemModel.query.get_or_404(item_id)
         if item:
             item.type = request_data["type"]

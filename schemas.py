@@ -2,6 +2,8 @@ from marshmallow import Schema, fields
 
 
 class PlainItemSchema(Schema):
+    # dump_only only to output data field
+    # load_only only to input data field
     id = fields.Int(dump_only=True)
     type = fields.Str(required=True)
     price = fields.Float(required=True)
